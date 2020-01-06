@@ -1,0 +1,158 @@
+<configuration scan="false">
+    <springProperty name="info.service.name" source="info.service.name"/>
+    <property name="FILE_LOG_PATTERN" value="%d{ISO8601} [%thread] %X{CID} %-5level %logger{36} - %msg%n"/>
+
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${log.dir:~/app/${info.service.name}/log}/application.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- daily rollover -->
+            <fileNamePattern>${log.dir:~/app/${info.service.name}/log}/application.log.%d{yyyy-MM-dd}.%i.gz</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy
+                    class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <!-- or whenever the file size reaches 10MB -->
+                <maxFileSize>10MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>${log.request.history:-5}</maxHistory>
+        </rollingPolicy>
+
+        <encoder>
+            <charset>utf-8</charset>
+            <pattern>%d{ISO8601} [%thread] %X{RID} %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="ASYNC_FILE" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>1024</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <appender-ref ref="FILE"/>
+    </appender>
+
+    <appender name="SEGMENTS" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${log.dir:~/app/${info.service.name}/log}/segments.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- daily rollover -->
+            <fileNamePattern>${log.dir:~/app/${info.service.name}/log}/segments.log.%d{yyyy-MM-dd_HH}.%i.gz</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy
+                    class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <!-- or whenever the file size reaches 10MB -->
+                <maxFileSize>10MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>${log.request.history:-5}</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <charset>utf-8</charset>
+            <pattern>%d{ISO8601} %msg%n</pattern>
+        </encoder>
+    </appender>
+    <appender name="ASYNC_SEGMENTS" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>1024</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <appender-ref ref="SEGMENTS"/>
+    </appender>
+
+    <appender name="TOKENS" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${log.dir:~/app/${info.service.name}/log}/rtb_tokens.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- daily rollover -->
+            <fileNamePattern>${log.dir:~/app/${info.service.name}/log}/rtb_tokens.log.%d{yyyy-MM-dd_HH}.%i.gz</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy
+                    class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <!-- or whenever the file size reaches 10MB -->
+                <maxFileSize>10MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>${log.request.history:-5}</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <charset>utf-8</charset>
+            <pattern>%d{ISO8601} %msg%n</pattern>
+        </encoder>
+    </appender>
+    <appender name="ASYNC_TOKENS" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>1024</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <appender-ref ref="TOKENS"/>
+    </appender>
+
+    <appender name="ALTIDS" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${log.dir:~/app/${info.service.name}/log}/alternate_ids.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- daily rollover -->
+            <fileNamePattern>${log.dir:~/app/${info.service.name}/log}/alternate_ids.log.%d{yyyy-MM-dd_HH}.%i.gz</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy
+                    class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <!-- or whenever the file size reaches 10MB -->
+                <maxFileSize>10MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>${log.request.history:-5}</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <charset>utf-8</charset>
+            <pattern>%d{ISO8601} %msg%n</pattern>
+        </encoder>
+    </appender>
+    <appender name="ASYNC_ALTIDS" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>1024</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <appender-ref ref="ALTIDS"/>
+    </appender>
+
+    <logger name="org.springframework.boot" level="INFO"/>
+    <logger name="org.hibernate.engine.jdbc.spi.SqlExceptionHelper" level="OFF"/>
+    <logger name="com.rubicon.platform.service.commons.metrics.GraphiteMetricsReporter" level="OFF"/>
+    <logger name="org.apache.kafka.clients.protectedKafkaConnection.ProducerConfig" level="WARN"/>
+
+    <logger name="com.rubiconproject.logs.segments" level="INFO" additivity="false">
+        <appender-ref ref="ASYNC_SEGMENTS" />
+    </logger>
+
+    <logger name="com.rubiconproject.logs.tokens" level="INFO" additivity="false">
+        <appender-ref ref="ASYNC_TOKENS" />
+    </logger>
+
+    <logger name="com.rubiconproject.logs.alternateids" level="INFO" additivity="false">
+        <appender-ref ref="ASYNC_ALTIDS" />
+    </logger>
+
+    <!-- local configuration -->
+    <springProfile name="local">
+        <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>%d{ISO8601} [%thread] %X{RID} %-5level %logger{36} - %msg%n</pattern>
+                <charset>utf8</charset>
+            </encoder>
+        </appender>
+
+        <logger name="com.rubiconproject.dmp.processors.optout" level="DEBUG"/>
+        <!--<logger name="com.rubiconproject.dmp." level="DEBUG"/>-->
+        <!--<logger name="com.dottydingo.async" level="DEBUG"/>-->
+        <!--<logger name="com.datastax.driver" level="DEBUG"/>-->
+
+        <logger name="com.rubiconproject.dmp.store.aerospike" level="DEBUG"/>
+
+        <logger name="com.rubiconproject.dmp.vertx" level="DEBUG" />
+
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="ASYNC_FILE"/>
+        </root>
+
+    </springProfile>
+
+    <!-- dev, qa configuration -->
+    <springProfile name="dev,qa">
+        <logger name="com.rubiconproject.dmp" level="DEBUG"/>
+
+        <root level="INFO">
+            <appender-ref ref="ASYNC_FILE" />
+        </root>
+    </springProfile>
+
+    <!-- staging, prod configuration -->
+    <springProfile name="staging,prod">
+        <root level="WARN">
+            <appender-ref ref="ASYNC_FILE" />
+        </root>
+    </springProfile>
+
+</configuration>
